@@ -6,7 +6,7 @@
   --text-muted: #555;
 
   --accent: rgba(102, 117, 134, 1);
-  --settings-item-hover: rgba(0,0,0,0.05);
+  --settings-item-hover: rgba(0,0,0,0.1);
 
   --border: #bbb;
   --shadow: rgba(0, 0, 0, 0.08);
@@ -35,6 +35,10 @@
 }
 
 /*---- General ----*/
+* {
+  box-sizing: border-box;
+}
+
 #root {
   width: 100%;
   max-width: none;
@@ -118,23 +122,44 @@ body {
 }
 
 .library-header {
-  width: 100%;
-
   display: flex;
   flex-direction: row;
 
   border-bottom: 1px solid var(--border);
 }
 
-.library-header p {
-  justify-self: left;
+.breadcrumb-trail {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.25rem;
+
   padding: 0.3rem;
-  padding-right: 0;
+}
+
+.breadcrumb {
+  padding: 0 0.25rem;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.breadcrumb:hover {
+  background: var(--settings-item-hover);
+  color: var(--text-main);
 }
 
 .library-content {
   display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
   height: 100%;
+}
+
+.library-content.subdirectory {
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
 }
 
 .library-root {
@@ -154,7 +179,7 @@ body {
   display: flex;
   justify-content: center;
 
-  width: 150px;
+  width: 350px;
   padding: 5rem;
 
   cursor: pointer;
@@ -168,9 +193,46 @@ body {
 }
 
 .actions {
-  top: 0;
-  left: 0;
+  display: flex;
+  align-items: center;
+
+  width: 100%;
+  min-height: 2.5rem;
+  padding: 0.3rem;
 }
+
+.back-button {
+  background: none;
+  border: none;
+
+  color: var(--text-muted);
+
+  font-size: 1.5rem;
+
+  cursor: pointer;
+
+  padding: 0;
+}
+
+.back-button:hover {
+  color: var(--text-main);
+  transform: translateX(-2px);
+}
+
+.import-button {
+  margin-left: auto;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.import-button:hover {
+  transform: translateY(-2px);
+}
+
+.import-button:active {
+  transform: scale(0.98);
+}
+
 
 /* Setup Panel */
 .setup-panel {

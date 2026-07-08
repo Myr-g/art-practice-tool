@@ -5,15 +5,27 @@ function Library()
 {
     const [directory, setDirectory] = useState([]);
 
+    const loadLibrary = () => {
+        
+    }
+
     return (
         <>
             <div className='library'>
                 <div className='library-header'>
-                    <p>Library</p>
-                    <p className='breadcrumb-trail'>{directory.length > 0 ? "/ " + directory.join(" / ") : ""}</p>
+                    <p className='breadcrumb-trail'>
+                        <p className='breadcrumb' onClick={() => setDirectory([])}>Library</p>
+
+                        {directory.map((segment, index) => (
+                            <span key={index}>
+                                <span className='separator'>/ </span>
+                                <span className='breadcrumb' onClick={() => setDirectory(directory.slice(0, index + 1))}>{segment}</span>
+                            </span>
+                        ))}
+                    </p>
                 </div>
 
-                <div className='library-content'>
+                <div className={`library-content ${directory.length === 0 ? "" : "subdirectory"}`}>
                     {directory.length === 0 && (
                         <>
                             <div className='library-root'>
@@ -38,8 +50,10 @@ function Library()
                                     </svg>
                                 </button>
 
-                                <button>Import Folder</button>
+                                <button className='import-button'>Import Folder</button>
                             </div>
+
+                            <div className='folders'></div>
                         </>
                     )}
 
