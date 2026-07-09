@@ -9,8 +9,8 @@ It’s for artists who want to practice without stopping every few minutes to lo
 - You click the 'import folder' button and select the folder(s) that have your references
 - The APT copies the folder(s) into its own library (located in AppData/Roaming), leaving your original files untouched
 - You choose how you want to practice:
-  - **Manual mode** — use arrow keys to cycle through refs
-  - **Timer mode** — refs are cycled automatically  
+  - **Manual mode** - use arrow keys to cycle through refs
+  - **Timer mode** - refs are cycled automatically  
 - Every folder you select to have refs pulled from have their contents added to a list
 - While practicing, the APT will pull references at random from that list to display
 - When you end the session, you'll be shown a simple summary:
@@ -18,7 +18,7 @@ It’s for artists who want to practice without stopping every few minutes to lo
   - How many references were shown  
   - Which folders were pulled from 
   - Thumbnails of the refs that were shown
-- You can choose from the following options to send to the 'archive' folder:
+- You can choose from the following options to move to the 'archive' folder:
   - **All** of them  
   - **Some** of them (you can choose specifically)
   - **None** of them  
