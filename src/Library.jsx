@@ -1,13 +1,37 @@
 import { useState, useEffect } from 'react';
+import { appDataDir, join } from '@tauri-apps/api/path';
+import { exists, mkdir, readDir } from '@tauri-apps/plugin-fs';
 import './App.css';
 
 function Library()
 {
     const [directory, setDirectory] = useState([]);
+    const [library, setLibrary] = useState({
+        references: [],
+        archive: []
+    });
 
-    const loadLibrary = () => {
-        
-    }
+    const loadLibrary = async() => {
+        try {
+            const appDir = await appDataDir();
+            const referencesDir = await join(appDir, "References");
+            const archiveDir = await join(appDir, "Archive");
+
+            await mkdir(referencesDir, { recursive: true });
+            await mkdir(archiveDir, { recursive: true });
+
+            const data = await readDir(referencesDir);
+            console.log(data);
+        }
+
+        catch(error) {
+            console.error("Library data loading failed: ", error);
+        }
+    };
+
+    useEffect(() => {
+        loadLibrary();
+    }, []);
 
     return (
         <>
