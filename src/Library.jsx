@@ -11,6 +11,8 @@ function Library()
         archive: []
     });
 
+    const SUPPORTED_IMAGE_EXTENSIONS = [".png", ".jpg", ".jpeg"];
+
     const loadLibrary = async() => {
         try {
             const appDir = await appDataDir();
@@ -20,13 +22,43 @@ function Library()
             await mkdir(referencesDir, { recursive: true });
             await mkdir(archiveDir, { recursive: true });
 
-            const data = await readDir(referencesDir);
-            console.log(data);
+            const referenceFolders = await loadFolders(referencesDir);
+            const archiveFolders = await loadFolders(archiveDir);
+            setLibrary(library => ({...library, references: referenceFolders, archive: archiveFolders}));
         }
 
         catch(error) {
             console.error("Library data loading failed: ", error);
         }
+    };
+
+    const countReferences = async(folderPath) => {
+        const entries = await readDir(folderPath);
+        const references = entries.filter(entry => entry.isFile && SUPPORTED_IMAGE_EXTENSIONS.some(extension =>
+            entry.name.toLowerCase().endsWith(extension)
+        ));
+
+        return references.length;
+    };
+
+    const loadFolders = async(folderPath) => {
+        const entries = await readDir(folderPath);
+        console.log(entries);
+
+        const folders = [];
+
+        for(const entry of entries)
+        {
+            if(entry.isDirectory)
+            {
+                const subfolderPath = await join(folderPath, entry.name);
+                const refCount = await countReferences(subfolderPath);
+
+                folders.push({name: entry.name, path: subfolderPath, referenceCount: refCount});
+            }
+        }
+
+        return folders;
     };
 
     useEffect(() => {
@@ -77,7 +109,14 @@ function Library()
                                 <button className='import-button'>Import Folder</button>
                             </div>
 
-                            <div className='folders'></div>
+                            <div className='folders'>
+                                {library.references.map((folder) => (
+                                    <div key={folder.path} className='folder' onClick={() => setDirectory(directory => [...directory, folder.name])}>
+                                        <h2>{folder.name}</h2>
+                                        <p>{folder.referenceCount} references</p>
+                                    </div>
+                                ))}
+                            </div>
                         </>
                     )}
 
