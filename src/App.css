@@ -173,7 +173,16 @@ body {
   margin: 0 auto;
 }
 
+.library-root .folder {
+  width: 350px;
+  height: 100%;
+}
+
 .folder {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
   background: var(--bg-paper);
   border: 1px solid var(--border);
   border-radius: 12px;
@@ -181,7 +190,8 @@ body {
   display: flex;
   justify-content: center;
 
-  width: 350px;
+  width: 250px;
+  height: 70%;
   padding: 5rem;
 
   cursor: pointer;
@@ -199,7 +209,7 @@ body {
   align-items: center;
 
   width: 100%;
-  min-height: 2.5rem;
+  min-height: 3rem;
   padding: 0.3rem;
 }
 
@@ -233,6 +243,14 @@ body {
 
 .import-button:active {
   transform: scale(0.98);
+}
+
+.folders {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(265px, 1fr));
+  gap: 24px;
+  width: 100%;
+  padding: 2.5rem;
 }
 
 

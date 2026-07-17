@@ -5,11 +5,9 @@ import './App.css';
 
 function Library()
 {
+    const [libraryPath, setLibraryPath] = useState(null);
     const [directory, setDirectory] = useState([]);
-    const [library, setLibrary] = useState({
-        references: [],
-        archive: []
-    });
+    const [currentDirectory, setCurrentDirectory] = useState(null);
 
     const SUPPORTED_IMAGE_EXTENSIONS = [".png", ".jpg", ".jpeg"];
 
@@ -22,9 +20,7 @@ function Library()
             await mkdir(referencesDir, { recursive: true });
             await mkdir(archiveDir, { recursive: true });
 
-            const referenceFolders = await loadFolders(referencesDir);
-            const archiveFolders = await loadFolders(archiveDir);
-            setLibrary(library => ({...library, references: referenceFolders, archive: archiveFolders}));
+            setLibraryPath(appDir);
         }
 
         catch(error) {
@@ -41,11 +37,11 @@ function Library()
         return references.length;
     };
 
-    const loadFolders = async(folderPath) => {
+    const loadDirectory = async(folderPath) => {
         const entries = await readDir(folderPath);
-        console.log(entries);
 
         const folders = [];
+        const images = [];
 
         for(const entry of entries)
         {
@@ -56,9 +52,29 @@ function Library()
 
                 folders.push({name: entry.name, path: subfolderPath, referenceCount: refCount});
             }
+
+            else if(entry.isFile && SUPPORTED_IMAGE_EXTENSIONS.some(extension => entry.name.toLowerCase().endsWith(extension)))
+            {
+                const imagePath = await join(folderPath, entry.name);
+                images.push({name: entry.name, path: imagePath});
+            }
         }
 
-        return folders;
+        return {folders, images};
+    };
+
+    const openDirectory = async(breadcrumbTrail) => {
+        if(breadcrumbTrail.length === 0) 
+        {
+            setCurrentDirectory(null);
+            setDirectory([]);
+            return;
+        }
+
+        const path = await join(libraryPath, ...breadcrumbTrail);
+        const dir = await loadDirectory(path);
+        setCurrentDirectory(dir);
+        setDirectory(breadcrumbTrail);
     };
 
     useEffect(() => {
@@ -69,66 +85,55 @@ function Library()
         <>
             <div className='library'>
                 <div className='library-header'>
-                    <p className='breadcrumb-trail'>
-                        <p className='breadcrumb' onClick={() => setDirectory([])}>Library</p>
+                    <div className='breadcrumb-trail'>
+                        <p className='breadcrumb' onClick={async() => await openDirectory([])}>Library</p>
 
                         {directory.map((segment, index) => (
                             <span key={index}>
                                 <span className='separator'>/ </span>
-                                <span className='breadcrumb' onClick={() => setDirectory(directory.slice(0, index + 1))}>{segment}</span>
+                                <span className='breadcrumb' onClick={async() => await openDirectory(directory.slice(0, index + 1))}>{segment}</span>
                             </span>
                         ))}
-                    </p>
+                    </div>
                 </div>
 
-                <div className={`library-content ${directory.length === 0 ? "" : "subdirectory"}`}>
-                    {directory.length === 0 && (
+                <div className={`library-content ${currentDirectory === null ? "" : "subdirectory"}`}>
+                    {!currentDirectory && (
                         <>
                             <div className='library-root'>
-                                <div className='folder' onClick={() => setDirectory(["References"])}>
+                                <div className='folder' onClick={async() => await openDirectory(["References"])}>
                                     <h2>References</h2>
                                 </div>
 
-                                <div className='folder' onClick={() => setDirectory(["Archive"])}>
+                                <div className='folder' onClick={async() => await openDirectory(["Archive"])}>
                                     <h2>Archive</h2>
                                 </div>
                             </div>
                         </>
                     )}
 
-                    {directory.length === 1 && directory[0] === "References" && (
+                    {currentDirectory && (
                         <>
                             <div className='actions'>
-                                <button className='back-button' onClick={() => setDirectory(prev => prev.slice(0, -1))}>
+                                <button className='back-button' onClick={() => openDirectory(directory.slice(0, -1))}>
                                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24">
                                         <path d="M0 0h24v24H0z" fill="none" />
 	                                    <path fill="currentColor" d="M16.62 2.99a1.25 1.25 0 0 0-1.77 0L6.54 11.3a.996.996 0 0 0 0 1.41l8.31 8.31c.49.49 1.28.49 1.77 0s.49-1.28 0-1.77L9.38 12l7.25-7.25c.48-.48.48-1.28-.01-1.76" />
                                     </svg>
                                 </button>
 
-                                <button className='import-button'>Import Folder</button>
+                                {directory.includes("References") && (
+                                    <button className='import-button' >Import Folder</button>
+                                )}
                             </div>
 
                             <div className='folders'>
-                                {library.references.map((folder) => (
-                                    <div key={folder.path} className='folder' onClick={() => setDirectory(directory => [...directory, folder.name])}>
+                                {currentDirectory.folders.map((folder) => (
+                                    <div key={folder.path} className='folder' onClick={async() => openDirectory([...directory, folder.name])}>
                                         <h2>{folder.name}</h2>
                                         <p>{folder.referenceCount} references</p>
                                     </div>
                                 ))}
-                            </div>
-                        </>
-                    )}
-
-                    {directory.length === 1 && directory[0] === "Archive" && (
-                        <>
-                            <div className='actions'>
-                                <button className='back-button' onClick={() => setDirectory(prev => prev.slice(0, -1))}>
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24">
-                                        <path d="M0 0h24v24H0z" fill="none" />
-	                                    <path fill="currentColor" d="M16.62 2.99a1.25 1.25 0 0 0-1.77 0L6.54 11.3a.996.996 0 0 0 0 1.41l8.31 8.31c.49.49 1.28.49 1.77 0s.49-1.28 0-1.77L9.38 12l7.25-7.25c.48-.48.48-1.28-.01-1.76" />
-                                    </svg>
-                                </button>
                             </div>
                         </>
                     )}
