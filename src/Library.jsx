@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { appDataDir, join } from '@tauri-apps/api/path';
 import { exists, mkdir, readDir } from '@tauri-apps/plugin-fs';
+import { convertFileSrc } from "@tauri-apps/api/core";
 import './App.css';
 
 function Library()
@@ -21,6 +22,7 @@ function Library()
             await mkdir(archiveDir, { recursive: true });
 
             setLibraryPath(appDir);
+            console.log(appDir);
         }
 
         catch(error) {
@@ -132,6 +134,15 @@ function Library()
                                     <div key={folder.path} className='folder' onClick={async() => openDirectory([...directory, folder.name])}>
                                         <h2>{folder.name}</h2>
                                         <p>{folder.referenceCount} references</p>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <div className='images'>
+                                {currentDirectory.images.map((image) => (
+                                    <div key={image.path} className='image'>
+                                        <img src={convertFileSrc(image.path)} alt={image.name}></img>
+                                        <p>{image.name}</p>
                                     </div>
                                 ))}
                             </div>

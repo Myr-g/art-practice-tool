@@ -181,22 +181,19 @@ body {
 .folder {
   display: flex;
   flex-direction: column;
+  align-items: center;
   justify-content: center;
-
+  
   background: var(--bg-paper);
   border: 1px solid var(--border);
   border-radius: 12px;
 
-  display: flex;
-  justify-content: center;
-
-  width: 250px;
-  height: 70%;
-  padding: 5rem;
+  padding: 1.5rem;
+  width: 100%;
+  min-height: 180px;
 
   cursor: pointer;
-
-  transition: transform .15s ease;
+  transition: transform .15s ease, box-shadow .15s ease;
 }
 
 .folder:hover {
@@ -251,6 +248,49 @@ body {
   gap: 24px;
   width: 100%;
   padding: 2.5rem;
+}
+
+.images {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 24px;
+  width: 100%;
+  padding: 2.5rem;
+}
+
+.image {
+  background: var(--bg-paper);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  padding: 0.25rem;
+  cursor: pointer;
+
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+
+.image:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px var(--shadow);
+}
+
+.image img {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-bottom: 0.25rem;
+}
+
+.image p {
+  font-size: 0.9rem;
+  text-align: center;
+  color: var(--text-secondary);
+  word-break: break-word;
 }
 
 
