@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import { appDataDir, join } from '@tauri-apps/api/path';
-import { exists, mkdir, readDir } from '@tauri-apps/plugin-fs';
+import { appDataDir, join, basename } from '@tauri-apps/api/path';
+import { mkdir, readDir, copyFile } from '@tauri-apps/plugin-fs';
 import { convertFileSrc } from "@tauri-apps/api/core";
+import { open } from '@tauri-apps/plugin-dialog';
 import './App.css';
 
 function Library()
@@ -9,6 +10,7 @@ function Library()
     const [libraryPath, setLibraryPath] = useState(null);
     const [directory, setDirectory] = useState([]);
     const [currentDirectory, setCurrentDirectory] = useState(null);
+    const [previewImage, setPreviewImage] = useState(null);
 
     const SUPPORTED_IMAGE_EXTENSIONS = [".png", ".jpg", ".jpeg"];
 
@@ -79,9 +81,56 @@ function Library()
         setDirectory(breadcrumbTrail);
     };
 
+    const importFolder = async() => {
+        const folderPath = await open({directory: true, multiple: false});
+
+        if(!folderPath)
+        {
+            return;
+        }
+
+        const folderName = await basename(folderPath);
+
+        const referencesDir = await join(libraryPath, ...directory);
+        const folderDir = await join(referencesDir, folderName);
+
+        await mkdir(folderDir, {recursive: true});
+
+        const entries = await readDir(folderPath);
+
+        for(const entry of entries)
+        {
+            if(entry.isFile && SUPPORTED_IMAGE_EXTENSIONS.some(extension => entry.name.toLowerCase().endsWith(extension)))
+            {
+                const entryPath = await join(folderPath, entry.name);
+                const destPath = await join (folderDir, entry.name);
+                await copyFile(entryPath, destPath);
+            }
+        }
+
+        await openDirectory(directory);
+    };
+
     useEffect(() => {
         loadLibrary();
     }, []);
+
+    useEffect(() => {
+        if (!previewImage) return;
+
+        const handleKeyDown = (e) => {
+            if(e.key === "Escape")
+            {
+                setPreviewImage(null);
+            }
+        };
+
+        window.addEventListener("keydown", handleKeyDown);
+
+        return () => {
+            window.removeEventListener("keydown", handleKeyDown);
+        };
+    }, [previewImage]);
 
     return (
         <>
@@ -125,27 +174,39 @@ function Library()
                                 </button>
 
                                 {directory.includes("References") && (
-                                    <button className='import-button' >Import Folder</button>
+                                    <button className='import-button' onClick={() => importFolder()}>Import Folder</button>
                                 )}
                             </div>
 
-                            <div className='folders'>
-                                {currentDirectory.folders.map((folder) => (
-                                    <div key={folder.path} className='folder' onClick={async() => openDirectory([...directory, folder.name])}>
-                                        <h2>{folder.name}</h2>
-                                        <p>{folder.referenceCount} references</p>
-                                    </div>
-                                ))}
-                            </div>
+                            {currentDirectory.folders.length > 0 && (
+                                <div className='folders'>
+                                    {currentDirectory.folders.map((folder) => (
+                                        <div key={folder.path} className='folder' onClick={async() => openDirectory([...directory, folder.name])}>
+                                            <h2>{folder.name}</h2>
+                                            <p>{folder.referenceCount} references</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
 
-                            <div className='images'>
-                                {currentDirectory.images.map((image) => (
-                                    <div key={image.path} className='image'>
-                                        <img src={convertFileSrc(image.path)} alt={image.name}></img>
-                                        <p>{image.name}</p>
+                            {currentDirectory.images.length > 0 && (
+                                <div className='images'>
+                                    {currentDirectory.images.map((image) => (
+                                        <div key={image.path} className='image'>
+                                            <img src={convertFileSrc(image.path)} alt={image.name} onDoubleClick={() => setPreviewImage(image)}></img>
+                                            <p>{image.name}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+
+                            {previewImage && (
+                                <div className='preview-image-overlay' onClick={() => setPreviewImage(null)}>
+                                    <div className='preview-image' onClick={(e) => e.stopPropagation()}>
+                                        <img src={convertFileSrc(previewImage.path)} alt={previewImage.name}></img> 
                                     </div>
-                                ))}
-                            </div>
+                                </div>
+                            )}
                         </>
                     )}
                 </div>
