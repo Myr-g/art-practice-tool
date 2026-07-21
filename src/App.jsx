@@ -1,8 +1,21 @@
 import { useState, useEffect } from 'react';
 import './App.css';
 import Home from './Home';
+import Practice from './Practice';
 
-function App() {
+function App() 
+{
+  const [isPracticing, setIsPracticing] = useState(false);
+  const [session, setSession] = useState({
+    mode: "Manual",
+    timer: 30,
+    selectedFolders: [],
+
+    references: [],
+    currentReference: null,
+    shownReferences: [],
+    startTime: null
+  });
 
   const [theme, setTheme] = useState(() => {
     return localStorage.getItem("theme") || "Dark";
@@ -31,7 +44,13 @@ function App() {
         </div>
 
         <div className='art-practice-tool-content'>
-          <Home></Home>
+          {!isPracticing && (
+            <Home session={session} setSession={setSession} setIsPracticing={setIsPracticing}/>
+          )}
+
+          {isPracticing && (
+            <Practice session={session} setIsPracticing={setIsPracticing}/>
+          )}
         </div>
       </div>
     </>

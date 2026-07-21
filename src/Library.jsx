@@ -5,14 +5,12 @@ import { convertFileSrc } from "@tauri-apps/api/core";
 import { open } from '@tauri-apps/plugin-dialog';
 import './App.css';
 
-function Library()
+function Library({ setReferenceFolders, SUPPORTED_IMAGE_EXTENSIONS })
 {
     const [libraryPath, setLibraryPath] = useState(null);
     const [directory, setDirectory] = useState([]);
     const [currentDirectory, setCurrentDirectory] = useState(null);
     const [previewImage, setPreviewImage] = useState(null);
-
-    const SUPPORTED_IMAGE_EXTENSIONS = [".png", ".jpg", ".jpeg"];
 
     const loadLibrary = async() => {
         try {
@@ -24,12 +22,38 @@ function Library()
             await mkdir(archiveDir, { recursive: true });
 
             setLibraryPath(appDir);
-            console.log(appDir);
+            
+            const referenceFolders = await getAllFolders(referencesDir);
+            setReferenceFolders(referenceFolders);
         }
 
         catch(error) {
             console.error("Library data loading failed: ", error);
         }
+    };
+
+    const getAllFolders = async(referencesPath) => {
+        const folders = [];
+
+        const recurse = async(folderPath) => {
+            const entries = await readDir(folderPath);
+
+            for(const entry of entries)
+            {
+                if(entry.isDirectory)
+                {
+                    const path = await join(folderPath, entry.name);
+                    const refCount = await countReferences(path);
+
+                    folders.push({name: entry.name, path: path, referenceCount: refCount});
+
+                    await recurse(path);
+                }
+            }
+        };
+
+        await recurse(referencesPath);
+        return folders;
     };
 
     const countReferences = async(folderPath) => {
