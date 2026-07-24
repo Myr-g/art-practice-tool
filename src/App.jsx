@@ -12,6 +12,7 @@ function App()
     selectedFolders: [],
 
     references: [],
+    currentIndex: 0,
     currentReference: null,
     shownReferences: [],
     startTime: null
@@ -49,7 +50,7 @@ function App()
           )}
 
           {isPracticing && (
-            <Practice session={session} setIsPracticing={setIsPracticing}/>
+            <Practice session={session} setSession={setSession} setIsPracticing={setIsPracticing}/>
           )}
         </div>
       </div>
